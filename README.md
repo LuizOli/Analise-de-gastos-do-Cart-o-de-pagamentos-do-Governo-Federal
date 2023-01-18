@@ -18,3 +18,16 @@ Utilizando os dados disponíveis sobre os gastos do cartão corporativo da Presi
 O arquivo "codigo_r.r" possui o mesmo conteúdo apenas com os códigos utilizados.
 
 O ajuste de inflação foi elaborado utilizando o indicador [IPCA](https://ibge.gov.br/Precos_Indices_de_Precos_ao_Consumidor/IPCA/)
+
+## A concluir
+
+* Relações entre empresas, quais empresas são reorrentes?
+* Comparação entre presidentes em relação aos sub-elementos das despesas, quem gastou com o quê?
+* Incluir dados do portal da transparência, possivel omição de gastos nos dados disponibilizados, dados estão completos?
+* Dashboard interativo com os gastos
+* Reunir informações da RFB utilizando os CNPJS disponibilizados
+* Raspagem de notícias relevantes à relação a gastos altos
+* Elaborar vizualização de mapa para os gastos efetuados em território nacional
+* Reunir informções sobre os portadores dos cartões, quais foram os CPFs que mais gastaram, quando, em que, onde e porque.
+* Análisar o CIDIC quais foram os artigos mais usados, encontrar o porquê da classificação sigilosa
+
