@@ -5,13 +5,13 @@ Análise dos gastos do cartão corporativo da presidência da republica disponí
 
 ## Metodologia
 
-Utilizando os dados disponíveis sobre os gastos do cartão corporativo da Presidência da República do período entre 2003 e 2022 foi feita a correção dos valores dos gastos considerando a inflação por meio do IPCA trazendo-os para a data presente de 18 de janeiro de 2023 e comparou-se como, quando e com o que foram gastos os recursos entres os presidentes Lula, Dilma, Temer e Bolsonaro.
+Utilizando os dados disponíveis sobre os gastos do cartão corporativo da Presidência da República do período entre 2003 e 2022 foi feita a correção dos valores dos gastos considerando a inflação por meio do IPCA trazendo-os para a data presente de 18 de janeiro de 2023 e comparou-se **como, quando e com o que** foram gastos os recursos entres os presidentes **Lula, Dilma, Temer e Bolsonaro.**
 
 ## Bibliotecas utilizadas
 
-Tidyverse: [https://www.tidyverse.org/]
-RMarkdown: [https://rmarkdown.rstudio.com/]
-Knitr: [https://www.rdocumentation.org/packages/knitr/versions/1.41]
+* Tidyverse: [https://www.tidyverse.org/]
+* RMarkdown: [https://rmarkdown.rstudio.com/]
+* Knitr: [https://www.rdocumentation.org/packages/knitr/versions/1.41]
 
 ## Observações
 
