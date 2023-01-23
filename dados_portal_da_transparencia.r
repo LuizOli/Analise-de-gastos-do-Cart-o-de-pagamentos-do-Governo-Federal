@@ -97,7 +97,7 @@ if (!("Dados_CPGF.rds" %in% dir())) {
   message(unlink("CSVs",
                  recursive = TRUE))
 }
-
+{
 dados <- read_rds("Dados_CPGF.rds")
 
 colnames(dados) <-
@@ -107,7 +107,7 @@ colnames(dados) <-
   stringi::stri_trans_general("ascii")
 
 table(dados$nome.orgao.superior) %>%
-  sort(decreasing = T) 
+  sort(decreasing = T)
 
 dados %>%
   group_by(nome.orgao.superior) %>%
@@ -116,57 +116,89 @@ dados %>%
   ggplot(aes(x = reorder(nome.orgao.superior, operacoes), y = operacoes)) +
   geom_bar(stat = "identity") +
   labs(y = "Operações",
-       x = "Orgao") +
+       x = "Orgão") +
   coord_flip()
 
 dados %>% colnames()
 
-dados[is.na(dados$valor.transacao),] 
-
+dados[is.na(dados$valor.transacao),]
+}
 # Corrigir pela inflacao
 
-ipca<-read_csv2("ipca_2002_2022.csv")
+ipca <-
+  read_delim(
+    "ipca_2002_2022.csv",
+    delim = ";",
+    escape_double = FALSE,
+    locale = locale(decimal_mark = ",",
+                    grouping_mark = "."),
+    trim_ws = TRUE
+  )
+
+dados_sigilosos<-
+  dados %>% filter(nome.portador=="Sigiloso")
+
+dados_abertos<-
+  dados %>% filter(nome.portador!="Sigiloso")
+
+dados_abertos<-
+  dados %>%
+  mutate(ano = lubridate::year(data.transacao),
+         mes_num = lubridate::month(data.transacao)) %>%
+  left_join(ipca) %>%
+  mutate(valor.corrigido = valor.transacao * fator_inflacao_2022)
+
+dados_sigilosos<-
+  dados_sigilosos %>% 
+  mutate(mes.extrato= as.numeric(mes.extrato)) %>% 
+  left_join(ipca,
+            by=c("ano.extrato"="ano",
+                 "mes.extrato"="mes_num")) %>% 
+  mutate(valor.corrigido = fator_inflacao_2022* valor.transacao)
 
 # Total anual gasto em milhoes
 
-dados %>%
-  group_by(ano.extrato,nome.orgao.superior) %>%
+  group_by(ano.extrato, nome.orgao.superior) %>%
   summarise(
     ano.extrato,
     nome.orgao.superior,
-    Total = sum(valor.transacao) / 1000000,
-    Media = mean(valor.transacao) / 1000000,
+    Total = sum(valor.corrigido) / 1000000,
+    Media = mean(valor.corrigido) / 1000000,
     Transacoes = n()
   ) %>%
-  distinct() %>% 
-  ggplot(aes(x = factor(ano.extrato),
-             y = Total,
-             fill = nome.orgao.superior)) +
-  geom_bar(stat = "identity")+
+  distinct() %>%
+  ggplot(aes(
+    x = factor(ano.extrato),
+    y = Total,
+    fill = nome.orgao.superior
+  )) +
+  geom_bar(stat = "identity") +
   labs(x = "Ano",
        y = "Total Gasto",
-       title="Gasto anual total em milhões de reais",
+       title = "Gasto anual total em milhões de reais",
        fill = "Orgão")
 
 # Gasto anual total PR
 
 dados %>%
-  filter(nome.orgao.superior == "Presidência da República") %>%
+  filter(nome.orgao.superior == "Presidência da República",
+         !is.na(valor.corrigido)) %>%
   group_by(ano.extrato) %>%
   summarise(
     ano.extrato,
     nome.orgao.superior,
-    Total = sum(valor.transacao) / 1000000,
-    Media = mean(valor.transacao) / 1000000,
+    Total = sum(valor.corrigido) / 1000000,
+    Media = mean(valor.corrigido) / 1000000,
     Transacoes = n()
   ) %>%
-  distinct() %>% 
-  ggplot(aes(x = factor(ano.extrato),
-             y = Total,
-             fill=nome.orgao.superior)) +
-  geom_bar(stat = "identity")+
+  distinct() %>%
+  ggplot(aes(
+    x = factor(ano.extrato),
+    y = Total,
+    fill = nome.orgao.superior
+  )) +
+  geom_bar(stat = "identity") +
   labs(x = "Ano",
        y = "Total Gasto",
-       title="Gasto anual total em milhoes de reais")+
+       title = "Gasto anual total em milhoes de reais") +
   theme(legend.position = "none")
-
