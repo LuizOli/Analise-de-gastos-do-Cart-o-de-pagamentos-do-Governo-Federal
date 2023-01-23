@@ -3,7 +3,7 @@
     "path": "C:/Users/olive/OneDrive/Luiz/Portifolio/Gastos-em-Cartao-Corporativo-2003-2022/Analise-de-gastos-do-Cart-o-de-pagamentos-do-Governo-Federal/dados_portal_da_transparencia.r",
     "project_path": "dados_portal_da_transparencia.r",
     "type": "r_source",
-    "hash": "1859384537",
+    "hash": "3174503850",
     "contents": "",
     "dirty": false,
     "created": 1674160754407.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "157,0",
-        "scrollLine": "149"
+        "cursorPosition": "252,0",
+        "scrollLine": "229"
     },
     "folds": "",
-    "lastKnownWriteTime": 1674163002,
+    "lastKnownWriteTime": 1674512842,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1674163002811,
+    "last_content_update": 1674512842716,
     "read_only": false,
     "read_only_alternatives": []
 }

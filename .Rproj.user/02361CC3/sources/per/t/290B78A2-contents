@@ -98,32 +98,40 @@ if (!("Dados_CPGF.rds" %in% dir())) {
                  recursive = TRUE))
 }
 {
-dados <- read_rds("Dados_CPGF.rds")
-
-colnames(dados) <-
-  colnames(dados) %>%
-  tolower() %>%
-  make.names(unique = T)  %>%
-  stringi::stri_trans_general("ascii")
-
-table(dados$nome.orgao.superior) %>%
-  sort(decreasing = T)
-
-dados %>%
-  group_by(nome.orgao.superior) %>%
-  summarise(nome.orgao.superior, operacoes = n()) %>%
-  distinct() %>%
-  ggplot(aes(x = reorder(nome.orgao.superior, operacoes), y = operacoes)) +
-  geom_bar(stat = "identity") +
-  labs(y = "Operações",
-       x = "Orgão") +
-  coord_flip()
-
-dados %>% colnames()
-
-dados[is.na(dados$valor.transacao),]
+  dados <- read_rds("Dados_CPGF.rds")
+  
+  colnames(dados) <-
+    colnames(dados) %>%
+    tolower() %>%
+    make.names(unique = T)  %>%
+    stringi::stri_trans_general("ascii")
+  
+  table(dados$nome.orgao.superior) %>%
+    sort(decreasing = T)
+  
+  dados %>%
+    group_by(nome.orgao.superior) %>%
+    summarise(nome.orgao.superior, operacoes = n()) %>%
+    distinct() %>%
+    ggplot(aes(x = reorder(nome.orgao.superior, operacoes), y = operacoes)) +
+    geom_bar(stat = "identity") +
+    labs(y = "Operações",
+         x = "Orgão") +
+    coord_flip()
+  
+  dados %>% colnames()
+  
+  dados[is.na(dados$valor.transacao),] %>% dim() %>% message()
+  
+  dados <-
+    dados %>%
+    mutate(sigiloso = if_else(nome.portador == "Sigiloso", "Sim", "Não"))
+  
 }
 # Corrigir pela inflacao
+
+table(dados$ano.extrato,
+      dados$mes.extrato)
 
 ipca <-
   read_delim(
@@ -135,59 +143,73 @@ ipca <-
     trim_ws = TRUE
   )
 
-dados_sigilosos<-
-  dados %>% filter(nome.portador=="Sigiloso")
+dados_sigilosos <-
+  dados %>% filter(nome.portador == "Sigiloso")
 
-dados_abertos<-
-  dados %>% filter(nome.portador!="Sigiloso")
+dados_abertos <-
+  dados %>% filter(nome.portador != "Sigiloso")
 
-dados_abertos<-
+dados_abertos <-
   dados %>%
   mutate(ano = lubridate::year(data.transacao),
          mes_num = lubridate::month(data.transacao)) %>%
   left_join(ipca) %>%
   mutate(valor.corrigido = valor.transacao * fator_inflacao_2022)
 
-dados_sigilosos<-
-  dados_sigilosos %>% 
-  mutate(mes.extrato= as.numeric(mes.extrato)) %>% 
+dados_sigilosos <-
+  dados_sigilosos %>%
+  mutate(mes.extrato = as.numeric(mes.extrato)) %>%
   left_join(ipca,
-            by=c("ano.extrato"="ano",
-                 "mes.extrato"="mes_num")) %>% 
-  mutate(valor.corrigido = fator_inflacao_2022* valor.transacao)
+            by = c("ano.extrato" = "ano",
+                   "mes.extrato" = "mes_num")) %>%
+  mutate(valor.corrigido = fator_inflacao_2022 * valor.transacao)
 
 # Total anual gasto em milhoes
 
+dados_abertos %>%
+  select(valor.corrigido, ano.extrato, nome.orgao.superior) %>%
+  rbind(dados_sigilosos %>%
+          select(valor.corrigido, ano.extrato, nome.orgao.superior)) %>%
   group_by(ano.extrato, nome.orgao.superior) %>%
   summarise(
     ano.extrato,
     nome.orgao.superior,
-    Total = sum(valor.corrigido) / 1000000,
+    Total = sum(valor.corrigido,na.rm = T) / 1000000,
     Media = mean(valor.corrigido) / 1000000,
     Transacoes = n()
   ) %>%
   distinct() %>%
   ggplot(aes(
-    x = factor(ano.extrato),
+    x = (ano.extrato),
     y = Total,
     fill = nome.orgao.superior
   )) +
-  geom_bar(stat = "identity") +
+  # geom_bar(stat = "identity") +
+  geom_area(position = "stack") +
   labs(x = "Ano",
        y = "Total Gasto",
        title = "Gasto anual total em milhões de reais",
-       fill = "Orgão")
+       fill = "Orgão") +
+  theme(legend.position = "bottom") +
+  scale_x_continuous(n.breaks = 9)
 
 # Gasto anual total PR
 
-dados %>%
-  filter(nome.orgao.superior == "Presidência da República",
-         !is.na(valor.corrigido)) %>%
-  group_by(ano.extrato) %>%
+
+dados_abertos %>%
+  select(valor.corrigido, ano.extrato, nome.orgao.superior, sigiloso) %>%
+  rbind(
+    dados_sigilosos %>%
+      select(valor.corrigido, ano.extrato, nome.orgao.superior, sigiloso)
+  ) %>%
+  group_by(ano.extrato, sigiloso, nome.orgao.superior) %>%
+  filter(nome.orgao.superior == "Presidência da República" &
+           !is.na(valor.corrigido)) %>%
   summarise(
     ano.extrato,
     nome.orgao.superior,
-    Total = sum(valor.corrigido) / 1000000,
+    sigiloso,
+    Total = sum(valor.corrigido,na.rm = T) / 1000000,
     Media = mean(valor.corrigido) / 1000000,
     Transacoes = n()
   ) %>%
@@ -195,10 +217,37 @@ dados %>%
   ggplot(aes(
     x = factor(ano.extrato),
     y = Total,
-    fill = nome.orgao.superior
+    fill = sigiloso
   )) +
   geom_bar(stat = "identity") +
   labs(x = "Ano",
        y = "Total Gasto",
-       title = "Gasto anual total em milhoes de reais") +
-  theme(legend.position = "none")
+       title = "Gasto anual em milhões de reais pela Presidência da República") +
+  theme(legend.position = "bottom")
+
+# Comparando sigiloso e não sigiloso
+
+dados_abertos %>%
+  select(valor.corrigido,
+         ano.extrato,
+         nome.orgao.superior,
+         nome.orgao,
+         sigiloso) %>%
+  rbind(
+    dados_sigilosos %>%
+      select(
+        valor.corrigido,
+        ano.extrato,
+        nome.orgao.superior,
+        nome.orgao,
+        sigiloso
+      )
+  ) %>%
+  filter(nome.orgao.superior == "Presidência da República") %>% 
+  group_by(nome.orgao,ano.extrato,sigiloso) %>% 
+  summarise(total = sum(valor.corrigido,na.rm = T)) %>%
+  ggplot(aes(x = factor(ano.extrato),
+             y = total/1000000,
+             fill = nome.orgao))+
+  geom_bar(stat= "identity")+facet_wrap(~sigiloso)
+
