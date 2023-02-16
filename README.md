@@ -19,7 +19,7 @@ O arquivo "codigo_r.r" possui o mesmo conteúdo apenas com os códigos utilizado
 
 O ajuste de inflação foi elaborado utilizando o indicador [IPCA](https://ibge.gov.br/Precos_Indices_de_Precos_ao_Consumidor/IPCA/)
 
-## A concluir
+## Idéias 
 
 * Relações entre empresas, quais empresas são reorrentes?
 * Comparação entre presidentes em relação aos sub-elementos das despesas, quem gastou com o quê?
